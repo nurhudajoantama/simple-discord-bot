@@ -76,8 +76,8 @@ class Music(commands.Cog, name='Music module'):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(name='join', help='This command makes the bot join the voice channel')
-    async def join(self, ctx):
+    @commands.command(name='mjoin', help='This command makes the bot join the voice channel')
+    async def mjoin(self, ctx):
         if not ctx.message.author.voice:
             await ctx.send("You are not connected to a voice channel")
             return
@@ -87,13 +87,13 @@ class Music(commands.Cog, name='Music module'):
 
         await channel.connect()
 
-    @commands.command(name='leave', help='This command stops the music and makes the bot leave the voice channel')
-    async def leave(self, ctx):
+    @commands.command(name='mleave', help='This command stops the music and makes the bot leave the voice channel')
+    async def mleave(self, ctx):
         voice_client = ctx.message.guild.voice_client
         await voice_client.disconnect()
 
-    @commands.command(name='loop', help='This command toggles loop mode')
-    async def loop_(self, ctx):
+    @commands.command(name='mloop', help='This command toggles loop mode')
+    async def mloop_(self, ctx):
         global loop
 
         if loop:
@@ -104,8 +104,8 @@ class Music(commands.Cog, name='Music module'):
             await ctx.send('Loop mode is now `True!`')
             loop = True
 
-    @commands.command(name='play', help='This command plays music')
-    async def play(self, ctx):
+    @commands.command(name='mplay', help='This command plays music')
+    async def mplay(self, ctx, *, url):
         # global queue
         guild_id = str(ctx.message.guild.id)
 
@@ -113,10 +113,12 @@ class Music(commands.Cog, name='Music module'):
             await ctx.send("You are not connected to a voice channel")
             return
 
-        elif len(queue.get(guild_id)) == 0:
-            await ctx.send('Nothing in your queue! Use `?queue` to add a song!')
-
         else:
+            q = queue.get(guild_id)
+            q.append(url)
+            queue.set(guild_id, q)
+            await ctx.send(f'`{url}` added to queue!')
+
             try:
                 channel = ctx.message.author.voice.channel
                 await channel.connect()
@@ -152,14 +154,14 @@ class Music(commands.Cog, name='Music module'):
                 print(e)
                 break
 
-    @commands.command(name='skip', help='Skips the current song')
-    async def skip(self, ctx):
+    @commands.command(name='mskip', help='Skips the current song')
+    async def mskip(self, ctx):
         voice_channel = ctx.message.guild.voice_client
         voice_channel.stop()
         voice_channel.resume()
 
-    @commands.command(name='volume', help='This command changes the bots volume')
-    async def volume(self, ctx, volume: int):
+    @commands.command(name='mvolume', help='This command changes the bots volume')
+    async def mvolume(self, ctx, volume: int):
         if ctx.voice_client is None:
             return await ctx.send("Not connected to a voice channel.")
 
@@ -167,38 +169,37 @@ class Music(commands.Cog, name='Music module'):
         ctx.voice_client.source.volume = volume / 100
         await ctx.send(f"Changed volume to {volume}%")
 
-    @commands.command(name='pause', help='This command pauses the song')
-    async def pause(self, ctx):
+    @commands.command(name='mpause', help='This command pauses the song')
+    async def mpause(self, ctx):
         server = ctx.message.guild
         voice_channel = server.voice_client
 
         voice_channel.pause()
 
-    @commands.command(name='resume', help='This command resumes the song!')
-    async def resume(self, ctx):
+    @commands.command(name='mresume', help='This command resumes the song!')
+    async def mresume(self, ctx):
         server = ctx.message.guild
         voice_channel = server.voice_client
 
         voice_channel.resume()
 
-    @commands.command(name='stop', help='This command stops the song!')
-    async def stop(self, ctx):
+    @commands.command(name='mstop', help='This command stops the song!')
+    async def mstop(self, ctx):
         server = ctx.message.guild
         voice_channel = server.voice_client
 
         voice_channel.stop()
 
-    @commands.command(name='queue')
-    async def queue_(self, ctx, *, url):
-        # global queue
-        guild_id = str(ctx.message.guild.id)
-        q = queue.get(guild_id)
-        q.append(url)
-        queue.set(guild_id, q)
-        await ctx.send(f'`{url}` added to queue!')
+    @commands.command(name='mqueue', help="This command shows the queue")
+    async def mqueue_(self, ctx):
+        q = queue.get(str(ctx.message.guild.id))
+        if q is None:
+            await ctx.send('Your queue is **empty**')
+        else:
+            await ctx.send(f'Your queue is `{q}`')
 
-    @commands.command(name='remove')
-    async def remove(self, ctx, number):
+    @commands.command(name='mremove', help="This command removes a song from the queue")
+    async def mremove(self, ctx, number):
         # global queue
         guild_id = str(ctx.message.guild.id)
         q = queue.get(guild_id)
@@ -210,11 +211,3 @@ class Music(commands.Cog, name='Music module'):
 
         except:
             await ctx.send('Your queue is either **empty** or the index is **out of range**')
-
-    @commands.command(name='view', help='This command shows the queue')
-    async def view(self, ctx):
-        q = queue.get(str(ctx.message.guild.id))
-        if q is None:
-            await ctx.send('Your queue is **empty**')
-        else:
-            await ctx.send(f'Your queue is `{q}`')
