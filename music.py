@@ -136,11 +136,19 @@ class Music(commands.Cog, name='Music module'):
         voice_channel.stop()
         voice_channel.resume()
 
+    @commands.command()
+    async def tes(self, ctx):
+        voice_channel = ctx.message.guild.voice_client
+        # voice_channel.stop()
+        # voice_channel.resume()
+        print(voice_channel)
+
     @commands.command(name='volume', help='This command changes the bots volume')
     async def volume(self, ctx, volume: int):
         if ctx.voice_client is None:
             return await ctx.send("Not connected to a voice channel.")
 
+        print(ctx.voice_client)
         ctx.voice_client.source.volume = volume / 100
         await ctx.send(f"Changed volume to {volume}%")
 
