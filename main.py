@@ -1,3 +1,4 @@
+import discord
 from client import Client
 from custom_commands import CustomCommands
 from general_commands import GeneralCommands
@@ -26,8 +27,12 @@ def main():
         print('Creating database file...')
         open(DATABASE_FILE, 'a').close()
 
+    intents = discord.Intents.default()
+    intents.members = True
+
     bot = Client(
-        command_prefix=c_prefix
+        command_prefix=c_prefix,
+        intents=intents
     )
     bot.add_cog(GeneralCommands(bot))
     bot.add_cog(CustomCommands(bot, DATABASE_FILE))
