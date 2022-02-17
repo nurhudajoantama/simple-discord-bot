@@ -126,7 +126,8 @@ class Music(commands.Cog, name='Music module'):
 
                 await ctx.send('**Now playing:** {}'.format(player.title))
 
-            except:
+            except Exception as e:
+                print(e)
                 break
 
     @commands.command(name='skip', help='Skips the current song')
