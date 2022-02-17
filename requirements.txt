@@ -6,8 +6,8 @@ certifi==2021.10.8
 cffi==1.15.0
 chardet==4.0.0
 charset-normalizer==2.0.12
-discord==1.7.3
-discord.py==1.7.3
+discord[voice]==1.7.3
+discord.py[voice]==1.7.3
 idna==3.3
 multidict==6.0.2
 pycodestyle==2.8.0
