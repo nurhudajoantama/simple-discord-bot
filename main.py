@@ -12,12 +12,13 @@ def main():
 
     DC_TOKEN = os.getenv('DC_TOKEN')
     DATABASE_FILE = 'db/database.db'
-
+    c_prefix = 'n!'
     ENV = os.getenv('ENV')
     if ENV == 'prod':
         DC_TOKEN = os.getenv('DC_TOKEN')
     elif ENV == 'dev':
         DC_TOKEN = os.getenv('DEV_DC_TOKEN')
+        c_prefix = 'dn!'
 
     if not os.path.exists('db'):
         os.makedirs('db')
@@ -26,7 +27,7 @@ def main():
         open(DATABASE_FILE, 'a').close()
 
     bot = Client(
-        command_prefix='dn!'
+        command_prefix=c_prefix
     )
     bot.add_cog(GeneralCommands(bot))
     bot.add_cog(CustomCommands(bot, DATABASE_FILE))
