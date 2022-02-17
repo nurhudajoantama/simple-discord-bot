@@ -62,8 +62,8 @@ class CustomCommands(commands.Cog, name='Custom commands'):
             res += f"{command[2]} - {command[3]}\n"
         await ctx.send(res)
 
-    @commands.command(name="save", help="To add or update custom commands")
-    async def save(self, ctx, arg, *args):
+    @commands.command(name="csave", help="To add or update custom commands")
+    async def csave(self, ctx, arg, *args):
         res = ' '.join(args)
         if arg == " " or res == " ":
             await ctx.send("Please fill all the fields")
@@ -77,8 +77,8 @@ class CustomCommands(commands.Cog, name='Custom commands'):
         self.DB.update_res(db_res[0], res)
         await ctx.send(f"{arg}:{res} Successfully updated")
 
-    @commands.command(name="rmv", help="To remove saved custom comands")
-    async def rmv(self, ctx, arg):
+    @commands.command(name="crmv", help="To remove saved custom comands")
+    async def crmv(self, ctx, arg):
         db_res = self.DB.find_res(ctx.guild.id, arg)
         if db_res is None:
             await ctx.send("command not found")
