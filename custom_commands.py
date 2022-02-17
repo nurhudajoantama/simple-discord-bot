@@ -1,38 +1,40 @@
 import discord
 from discord.ext import commands
-import sqlite3
+import psycopg2
 
 
 class Database():
     def __init__(self, DB_URI):
         self.DB_URI = DB_URI
-        self.conn = sqlite3.connect(self.DB_URI)
+        self.conn = psycopg2.connect(self.DB_URI)
         self.c = self.conn.cursor()
         self.c.execute(
-            'CREATE TABLE IF NOT EXISTS commands (id INTEGER PRIMARY KEY, guild_id BIGINT, command VARCHAR, res TEXT)')
+            'CREATE TABLE IF NOT EXISTS command (id SERIAL PRIMARY KEY, guild_id BIGINT, command VARCHAR, res TEXT)')
+        self.c.execute(
+            'CREATE INDEX IF NOT EXISTS index_command ON command (guild_id, command)')
 
     def find_res(self, guild_id, command):
-        self.c.execute("SELECT * FROM commands WHERE guild_id = ? AND command = ?",
+        self.c.execute("SELECT * FROM command WHERE guild_id = %s AND command = %s",
                        (guild_id, command))
         return self.c.fetchone()
 
     def find_all_res(self, guild_id):
         self.c.execute(
-            "SELECT * FROM commands WHERE guild_id = ?", (guild_id,))
+            "SELECT * FROM command WHERE guild_id = %s", (guild_id,))
         return self.c.fetchall()
 
     def create_res(self, guild_id, command, res):
-        self.c.execute("INSERT INTO commands (guild_id, command, res) VALUES (?, ?, ?)",
+        self.c.execute("INSERT INTO command (guild_id, command, res) VALUES (%s, %s, %s)",
                        (guild_id, command, res))
         self.conn.commit()
 
     def update_res(self, id, res):
-        self.c.execute("UPDATE commands SET res = ? WHERE id = ?",
+        self.c.execute("UPDATE command SET res = %s WHERE id = %s",
                        (res, id))
         self.conn.commit()
 
     def delete_res(self, id):
-        self.c.execute("DELETE FROM commands WHERE id = ?", (id,))
+        self.c.execute("DELETE FROM command WHERE id = %s", (id,))
         self.conn.commit()
 
 

@@ -12,20 +12,15 @@ load_dotenv()
 def main():
 
     DC_TOKEN = os.getenv('DC_TOKEN')
-    DATABASE_FILE = 'db/database.db'
+    DATABASE_URL = os.getenv('DATABASE_URL')
     c_prefix = 'n!'
     ENV = os.getenv('ENV')
     if ENV == 'prod':
         DC_TOKEN = os.getenv('DC_TOKEN')
     elif ENV == 'dev':
         DC_TOKEN = os.getenv('DEV_DC_TOKEN')
+        DATABASE_URL = os.getenv('DEV_DATABASE_URL')
         c_prefix = 'dn!'
-
-    if not os.path.exists('db'):
-        os.makedirs('db')
-    if not os.path.exists(DATABASE_FILE):
-        print('Creating database file...')
-        open(DATABASE_FILE, 'a').close()
 
     intents = discord.Intents.default()
     intents.members = True
@@ -35,7 +30,7 @@ def main():
         intents=intents
     )
     bot.add_cog(GeneralCommands(bot))
-    bot.add_cog(CustomCommands(bot, DATABASE_FILE))
+    bot.add_cog(CustomCommands(bot, DATABASE_URL))
     bot.add_cog(GundarInfoCommands(bot))
     bot.add_cog(Music(bot))
     bot.run(DC_TOKEN)
