@@ -16,7 +16,7 @@ def main():
         command_prefix='n!'
     )
     bot.add_cog(GeneralCommands(bot))
-    bot.add_cog(CustomCommands(bot, os.getenv('DB_URI')))
+    bot.add_cog(CustomCommands(bot, 'db/database.db'))
     bot.add_cog(GundarInfoCommands(bot))
     bot.add_cog(Music(bot))
     bot.run(os.getenv('DC_TOKEN'))
