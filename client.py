@@ -12,5 +12,11 @@ class Client(commands.Bot):
         channel = discord.utils.get(member.guild.channels, name='general')
         await channel.send(f'Welcome {member.mention}! See `n!help` command for details!')
 
+    async def on_message(self, message):
+        if self.user == message.author:
+            return
+        else:
+            await self.process_commands(message)
+
     async def change_status(self):
         await self.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="n!help"))
