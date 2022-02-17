@@ -3,7 +3,27 @@ from discord.ext import commands
 import asyncio
 import youtube_dl
 
-queue = []
+
+class Queue():
+    def __init__(self):
+        self.queue = {}
+
+    def get(self, server):
+        if server in self.queue:
+            return self.queue[server]
+        else:
+            return []
+
+    def set(self, server, songs):
+        self.queue[server] = songs
+
+    def remove(self, server):
+        if server in self.queue:
+            del self.queue[server]
+
+
+queue = Queue()
+
 loop = False
 
 youtube_dl.utils.bug_reports_message = lambda: ''
@@ -86,13 +106,14 @@ class Music(commands.Cog, name='Music module'):
 
     @commands.command(name='play', help='This command plays music')
     async def play(self, ctx):
-        global queue
+        # global queue
+        guild_id = str(ctx.message.guild.id)
 
         if not ctx.message.author.voice:
             await ctx.send("You are not connected to a voice channel")
             return
 
-        elif len(queue) == 0:
+        elif len(queue.get(guild_id)) == 0:
             await ctx.send('Nothing in your queue! Use `?queue` to add a song!')
 
         else:
@@ -104,7 +125,7 @@ class Music(commands.Cog, name='Music module'):
 
         server = ctx.message.guild
         voice_channel = server.voice_client
-        while queue:
+        while len(queue.get(guild_id)) != 0:
             try:
                 while voice_channel.is_playing() or voice_channel.is_paused():
                     await asyncio.sleep(2)
@@ -115,14 +136,15 @@ class Music(commands.Cog, name='Music module'):
 
             try:
                 async with ctx.typing():
-                    player = await YTDLSource.from_url(queue[0], loop=self.bot.loop)
+                    player = await YTDLSource.from_url(queue.get(guild_id)[0], loop=self.bot.loop)
                     voice_channel.play(player, after=lambda e: print(
                         'Player error: %s' % e) if e else None)
 
+                    q = queue.get(guild_id)
                     if loop:
-                        queue.append(queue[0])
-
-                    del(queue[0])
+                        q.append(queue[0])
+                    del(q[0])
+                    queue.set(guild_id, q)
 
                 await ctx.send('**Now playing:** {}'.format(player.title))
 
@@ -135,13 +157,6 @@ class Music(commands.Cog, name='Music module'):
         voice_channel = ctx.message.guild.voice_client
         voice_channel.stop()
         voice_channel.resume()
-
-    @commands.command()
-    async def tes(self, ctx):
-        voice_channel = ctx.message.guild.voice_client
-        # voice_channel.stop()
-        # voice_channel.resume()
-        print(voice_channel)
 
     @commands.command(name='volume', help='This command changes the bots volume')
     async def volume(self, ctx, volume: int):
@@ -175,22 +190,31 @@ class Music(commands.Cog, name='Music module'):
 
     @commands.command(name='queue')
     async def queue_(self, ctx, *, url):
-        global queue
-
-        queue.append(url)
+        # global queue
+        guild_id = str(ctx.message.guild.id)
+        q = queue.get(guild_id)
+        q.append(url)
+        queue.set(guild_id, q)
         await ctx.send(f'`{url}` added to queue!')
 
     @commands.command(name='remove')
     async def remove(self, ctx, number):
-        global queue
+        # global queue
+        guild_id = str(ctx.message.guild.id)
+        q = queue.get(guild_id)
 
         try:
-            del(queue[int(number)])
-            await ctx.send(f'Your queue is now `{queue}!`')
+            del(q[int(number)])
+            queue.set(guild_id, q)
+            await ctx.send(f'Your queue is now `{q}!`')
 
         except:
             await ctx.send('Your queue is either **empty** or the index is **out of range**')
 
     @commands.command(name='view', help='This command shows the queue')
     async def view(self, ctx):
-        await ctx.send(f'Your queue is now `{queue}!`')
+        q = queue.get(str(ctx.message.guild.id))
+        if q is None:
+            await ctx.send('Your queue is **empty**')
+        else:
+            await ctx.send(f'Your queue is `{q}`')
