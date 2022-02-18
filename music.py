@@ -90,6 +90,7 @@ class Music(commands.Cog, name='Music module'):
     @commands.command(name='mleave', help='This command stops the music and makes the bot leave the voice channel')
     async def mleave(self, ctx):
         voice_client = ctx.message.guild.voice_client
+        queue.remove(str(ctx.message.guild.id))
         await voice_client.disconnect()
 
     @commands.command(name='mloop', help='This command toggles loop mode')
@@ -193,21 +194,36 @@ class Music(commands.Cog, name='Music module'):
     @commands.command(name='mqueue', help="This command shows the queue")
     async def mqueue_(self, ctx):
         q = queue.get(str(ctx.message.guild.id))
-        if q is None:
+        if len(q) == 0:
             await ctx.send('Your queue is **empty**')
         else:
-            await ctx.send(f'Your queue is `{q}`')
+            lmusic = 'List of songs in queue:\n'
+            for i, m in enumerate(q):
+                lmusic += f'{str(i+1)}. {str(m)}\n'
+
+            await ctx.send(f'Your queue is\n`{lmusic}`')
 
     @commands.command(name='mremove', help="This command removes a song from the queue")
     async def mremove(self, ctx, number):
-        # global queue
+        number = int(number) - 1
+        if number < 0:
+            await ctx.send('the index is **out of range**')
+            return
+
         guild_id = str(ctx.message.guild.id)
         q = queue.get(guild_id)
 
         try:
-            del(q[int(number)])
+            del(q[number])
             queue.set(guild_id, q)
-            await ctx.send(f'Your queue is now `{q}!`')
+            if len(q) == 0:
+                await ctx.send('Your queue is now **empty**')
+            else:
+                lmusic = 'List of songs in queue:\n'
+                for i, m in enumerate(q):
+                    lmusic += f'{str(i+1)}. {str(m)}\n'
+
+                await ctx.send(f'Your queue is\n`{lmusic}`')
 
         except:
             await ctx.send('Your queue is either **empty** or the index is **out of range**')
