@@ -94,8 +94,9 @@ class Music(commands.Cog, name='Music module'):
             while voice_channel.is_playing():  # and checks once again if the bot is not playing
                 break  # if it's playing it breaks
             else:
-                await voice_channel.disconnect()  # if not it disconnects
-                await ctx.send('**Music ended**, Nothing is playing now, _I am leave_')
+                if voice_channel.is_connected():
+                    await voice_channel.disconnect()  # if not it disconnects
+                    await ctx.send('**Music ended**, Nothing is playing now, _I am leave_')
 
     @commands.command(name='mleave', help='This command stops the music and makes the bot leave the voice channel')
     async def mleave(self, ctx):
@@ -175,8 +176,9 @@ class Music(commands.Cog, name='Music module'):
             while voice_channel.is_playing():  # and checks once again if the bot is not playing
                 break  # if it's playing it breaks
             else:
-                await voice_channel.disconnect()  # if not it disconnects
-                await ctx.send('**Music ended**, Nothing is playing now, _I am leave_')
+                if voice_channel.is_connected():
+                    await voice_channel.disconnect()  # if not it disconnects
+                    await ctx.send('**Music ended**, Nothing is playing now, _I am leave_')
 
     @commands.command(name='mskip', help='Skips the current song')
     async def mskip(self, ctx):
