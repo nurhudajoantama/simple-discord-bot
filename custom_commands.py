@@ -4,14 +4,9 @@ import psycopg2
 
 
 class Database():
-    def __init__(self, DB_URI):
-        self.DB_URI = DB_URI
-        self.conn = psycopg2.connect(self.DB_URI)
+    def __init__(self, connection):
+        self.conn = connection
         self.c = self.conn.cursor()
-        self.c.execute(
-            'CREATE TABLE IF NOT EXISTS command (id SERIAL PRIMARY KEY, guild_id BIGINT, command VARCHAR, res TEXT)')
-        self.c.execute(
-            'CREATE INDEX IF NOT EXISTS index_command ON command (guild_id, command)')
 
     def find_res(self, guild_id, command):
         self.c.execute("SELECT * FROM command WHERE guild_id = %s AND command = %s",
@@ -40,28 +35,44 @@ class Database():
 
 class CustomCommands(commands.Cog, name='Custom commands'):
 
-    def __init__(self, bot, DB_URI):
+    def __init__(self, bot, DB_POOL):
         self.bot = bot
-        self.DB = Database(DB_URI)
+        self.DB_POOL = DB_POOL
+        # self.DB = Database(DB_URI)
 
     @commands.command(name="c", help="Run custom command")
     async def c(self, ctx, arg):
-        db_res = self.DB.find_res(ctx.guild.id, arg)
-        if db_res is None:
-            await ctx.send("command not found")
-            return
-        res = db_res[3].replace("[name]", ctx.author.name)
+        res = None
+        async with ctx.typing():
+            connection = self.DB_POOL.getconn()
+            DB = Database(connection)
+            try:
+                db_res = DB.find_res(ctx.guild.id, arg)
+            finally:
+                self.DB_POOL.putconn(connection)
+
+            if db_res is None:
+                res = "command not found"
+            else:
+                res = db_res[3].replace("[name]", ctx.author.name)
         await ctx.send(res)
 
     @commands.command(name="clist", help="To list custom commands")
     async def clist(self, ctx):
-        db_res = self.DB.find_all_res(ctx.guild.id)
-        if db_res is None:
-            await ctx.send("No custom commands found")
-            return
-        res = ""
-        for command in db_res:
-            res += f"{command[2]} - {command[3]}\n"
+        res = None
+        async with ctx.typing():
+            connection = self.DB_POOL.getconn()
+            DB = Database(connection)
+            try:
+                db_res = DB.find_all_res(ctx.guild.id)
+            finally:
+                self.DB_POOL.putconn(connection)
+
+            if db_res is None:
+                res = "No custom commands found"
+            else:
+                for command in db_res:
+                    res += f"{command[2]} - {command[3]}\n"
         await ctx.send(res)
 
     @commands.command(name="csave", help="To add or update custom commands")
@@ -70,20 +81,33 @@ class CustomCommands(commands.Cog, name='Custom commands'):
         if arg == " " or res == " ":
             await ctx.send("Please fill all the fields")
             return
-
-        db_res = self.DB.find_res(ctx.guild.id, arg)
-        if db_res is None:
-            self.DB.create_res(ctx.guild.id, arg, res)
-            await ctx.send(f"{arg}:{res} Successfully created")
-            return
-        self.DB.update_res(db_res[0], res)
-        await ctx.send(f"{arg}:{res} Successfully updated")
+        respon = ''
+        async with ctx.typing():
+            connection = self.DB_POOL.getconn()
+            DB = Database(connection)
+            try:
+                db_res = DB.find_res(ctx.guild.id, arg)
+                if db_res is None:
+                    DB.create_res(ctx.guild.id, arg, res)
+                    respon = f"{arg}:{res} Successfully created"
+                else:
+                    DB.update_res(db_res[0], res)
+                    respon = f"{arg}:{res} Successfully updated"
+            finally:
+                self.DB_POOL.putconn(connection)
+        await ctx.send(respon)
 
     @commands.command(name="crmv", help="To remove saved custom comands")
     async def crmv(self, ctx, arg):
-        db_res = self.DB.find_res(ctx.guild.id, arg)
-        if db_res is None:
-            await ctx.send("command not found")
-            return
-        self.DB.delete_res(db_res[0])
+        async with ctx.typing():
+            connection = self.DB_POOL.getconn()
+            DB = Database(connection)
+            db_res = DB.find_res(ctx.guild.id, arg)
+            if db_res is None:
+                await ctx.send("command not found")
+                return
+            try:
+                DB.delete_res(db_res[0])
+            finally:
+                self.DB_POOL.putconn(connection)
         await ctx.send(f"{arg} Successfully deleted")
