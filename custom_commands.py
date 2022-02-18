@@ -59,7 +59,7 @@ class CustomCommands(commands.Cog, name='Custom commands'):
 
     @commands.command(name="clist", help="To list custom commands")
     async def clist(self, ctx):
-        res = None
+        res = ''
         async with ctx.typing():
             connection = self.DB_POOL.getconn()
             DB = Database(connection)
