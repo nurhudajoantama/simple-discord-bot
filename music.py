@@ -128,7 +128,9 @@ class Music(commands.Cog, name='Music module'):
 
         server = ctx.message.guild
         voice_channel = server.voice_client
-        while len(queue.get(guild_id)) != 0:
+        if (voice_channel.is_playing() or voice_channel.is_paused()) and len(queue.get(guild_id)) > 1:
+            return
+        while queue.get(guild_id):
             try:
                 while voice_channel.is_playing() or voice_channel.is_paused():
                     await asyncio.sleep(2)
@@ -149,11 +151,21 @@ class Music(commands.Cog, name='Music module'):
                     del(q[0])
                     queue.set(guild_id, q)
 
-                await ctx.send('**Now playing:** {}'.format(player.title))
+                await ctx.send(f'**Now playing:** {player.data["title"]} | {player.data["channel"]}')
 
             except Exception as e:
                 print(e)
                 break
+
+        while voice_channel.is_playing():  # Checks if voice_channel is playing
+            await asyncio.sleep(1)  # While it's playing it sleeps for 1 second
+        else:
+            await asyncio.sleep(360)  # If it's not playing it waits
+            while voice_channel.is_playing():  # and checks once again if the bot is not playing
+                break  # if it's playing it breaks
+            else:
+                await voice_channel.disconnect()  # if not it disconnects
+                await ctx.send('**Music ended**, Nothing is playing now, _I am leave_')
 
     @commands.command(name='mskip', help='Skips the current song')
     async def mskip(self, ctx):
