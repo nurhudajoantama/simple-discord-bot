@@ -72,6 +72,9 @@ class YTDLSource(discord.PCMVolumeTransformer):
         return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
 
 
+wait_until_leave = 360  # in seconds
+
+
 class Music(commands.Cog, name='Music module'):
     def __init__(self, bot):
         self.bot = bot
@@ -81,11 +84,18 @@ class Music(commands.Cog, name='Music module'):
         if not ctx.message.author.voice:
             await ctx.send("You are not connected to a voice channel")
             return
-
         else:
             channel = ctx.message.author.voice.channel
+            await channel.connect()
 
-        await channel.connect()
+            voice_channel = ctx.message.guild.voice_client
+            # If it's not playing it waits
+            await asyncio.sleep(wait_until_leave)
+            while voice_channel.is_playing():  # and checks once again if the bot is not playing
+                break  # if it's playing it breaks
+            else:
+                await voice_channel.disconnect()  # if not it disconnects
+                await ctx.send('**Music ended**, Nothing is playing now, _I am leave_')
 
     @commands.command(name='mleave', help='This command stops the music and makes the bot leave the voice channel')
     async def mleave(self, ctx):
@@ -105,8 +115,8 @@ class Music(commands.Cog, name='Music module'):
             await ctx.send('Loop mode is now `True!`')
             loop = True
 
-    @commands.command(name='mplay', help='This command plays music')
-    async def mplay(self, ctx, *, url):
+    @commands.command(name='mp', help='This command plays music')
+    async def mp(self, ctx, *, url):
         # global queue
         guild_id = str(ctx.message.guild.id)
 
@@ -209,13 +219,12 @@ class Music(commands.Cog, name='Music module'):
         if len(q) == 0:
             await ctx.send('Your queue is **empty**')
         else:
-            lmusic = 'List of songs in queue:\n'
+            lmusic = '**List of songs in queue:**\n'
             for i, m in enumerate(q):
                 lmusic += f'{str(i+1)}. {str(m)}\n'
+            await ctx.send(lmusic)
 
-            await ctx.send(f'Your queue is\n`{lmusic}`')
-
-    @commands.command(name='mremove', help="This command removes a song from the queue")
+    @commands.command(name='mrmv', help="This command removes a song from the queue")
     async def mremove(self, ctx, number):
         number = int(number) - 1
         if number < 0:
