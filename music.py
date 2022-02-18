@@ -72,7 +72,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
         return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
 
 
-wait_until_leave = 360  # in seconds
+wait_until_leave = 60  # in seconds
 
 
 class Music(commands.Cog, name='Music module'):
@@ -170,7 +170,8 @@ class Music(commands.Cog, name='Music module'):
         while voice_channel.is_playing():  # Checks if voice_channel is playing
             await asyncio.sleep(1)  # While it's playing it sleeps for 1 second
         else:
-            await asyncio.sleep(360)  # If it's not playing it waits
+            # If it's not playing it waits
+            await asyncio.sleep(wait_until_leave)
             while voice_channel.is_playing():  # and checks once again if the bot is not playing
                 break  # if it's playing it breaks
             else:
