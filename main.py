@@ -1,4 +1,5 @@
 import discord
+from discord.ext import commands
 from client import Client
 from custom_commands import CustomCommands, Database
 from db_pool import DatabasePool
@@ -29,6 +30,7 @@ def main():
 
     bot = Client(
         command_prefix=c_prefix,
+        help_command=commands.MinimalHelpCommand(),
         intents=intents
     )
     bot.add_cog(GeneralCommands(bot))
