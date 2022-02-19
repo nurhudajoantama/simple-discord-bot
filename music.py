@@ -75,7 +75,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
 wait_until_leave = 60  # in seconds
 
 
-class Music(commands.Cog, name='Music module'):
+class Music(commands.Cog, name='Music'):
     def __init__(self, bot):
         self.bot = bot
 
@@ -98,7 +98,7 @@ class Music(commands.Cog, name='Music module'):
                     await voice_channel.disconnect()  # if not it disconnects
                     await ctx.send('**Music ended**, Nothing is playing now, _I am leave_')
 
-    @commands.command(name='mleave', help='This command stops the music and makes the bot leave the voice channel')
+    @commands.command(name='mleave', help='This command makes the bot leave the voice channel')
     async def mleave(self, ctx):
         voice_client = ctx.message.guild.voice_client
         queue.remove(str(ctx.message.guild.id))

@@ -33,7 +33,7 @@ class Database():
         self.conn.commit()
 
 
-class CustomCommands(commands.Cog, name='Custom commands'):
+class CustomCommands(commands.Cog, name='Custom'):
 
     def __init__(self, bot, DB_POOL):
         self.bot = bot

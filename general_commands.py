@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 
 
-class GeneralCommands(commands.Cog, name='General commands'):
+class GeneralCommands(commands.Cog, name='General'):
     def __init__(self, bot):
         self.bot = bot
 
@@ -16,13 +16,11 @@ class GeneralCommands(commands.Cog, name='General commands'):
 
     @commands.command(name='author', help='This command returns the author of the bot')
     async def author(self, ctx):
-        author = self.bot.get_user(497765332149207043)
         emded = discord.Embed(
             title='Author',
-            description=f'This bot is created by **{author.mention}**',
+            description=f'This bot is created by **nurhudajoantama**',
             color=0x003366
         )
-        emded.set_image(url=author.avatar_url)
         await ctx.send(embed=emded)
 
     @commands.command(name='profile', help='This command returns the profile of the user you mention')
