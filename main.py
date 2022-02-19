@@ -3,9 +3,7 @@ from client import Client
 from custom_commands import CustomCommands, Database
 from db_pool import DatabasePool
 from general_commands import GeneralCommands
-from gundar_info_commands import GundarInfoCommands
 from music import Music
-import psycopg2.pool
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -35,7 +33,6 @@ def main():
     )
     bot.add_cog(GeneralCommands(bot))
     bot.add_cog(CustomCommands(bot, db_pool))
-    bot.add_cog(GundarInfoCommands(bot))
     bot.add_cog(Music(bot))
     bot.run(DC_TOKEN)
 
