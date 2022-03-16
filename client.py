@@ -8,10 +8,6 @@ class Client(commands.Bot):
         await self.change_status()
         print('Bot is online!')
 
-    async def on_member_join(self, member):
-        channel = discord.utils.get(member.guild.channels, name='general')
-        await channel.send(f'Welcome {member.mention}! See `n!help` command for details!')
-
     async def on_message(self, message):
         if self.user == message.author:
             return
