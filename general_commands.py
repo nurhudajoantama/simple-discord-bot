@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+import asyncio
 
 
 class GeneralCommands(commands.Cog, name='General'):
@@ -13,6 +14,13 @@ class GeneralCommands(commands.Cog, name='General'):
     @commands.command(name='halo', help='This command returns the Halo quote')
     async def halo(self, ctx):
         await ctx.send(f'_Hola_!!, {ctx.message.author.name}')
+
+    @commands.command(name='brutal', help='This spam with brutall messages | [n times int] [delay s float] [msg]')
+    async def brutal(self, ctx, n, delay, *msgs):
+        msg = ' '.join(msgs)
+        for _ in range(int(n)):
+            await ctx.send(msg)
+            await asyncio.sleep(float(delay))
 
     @commands.command(name='author', help='This command returns the author of the bot')
     async def author(self, ctx):
